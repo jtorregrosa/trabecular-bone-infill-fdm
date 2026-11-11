@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}} · bone-infill</title>
+<link rel="icon" type="image/svg+xml" href="{{ICON}}">
+<style>
+/*{{THEME}}*/
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #panel { position: fixed; top: 12px; left: 12px; width: 264px; max-height: calc(100% - 24px); overflow-y: auto; background: rgba(36, 36, 40, 0.92); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 12px 14px; backdrop-filter: blur(6px); user-select: none; -webkit-user-select: none; }
+  #infoBlock, #summary { user-select: text; -webkit-user-select: text; }
+  #panel.hidden { display: none; }
+  h1 { font-size: 14px; margin: 0 0 2px; font-weight: 600; word-break: break-all; }
+  h2 { margin: 14px 0 6px; }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: 1px 0; vertical-align: top; }
+  td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .row { display: flex; gap: 6px; align-items: center; margin: 4px 0; }
+  button { padding: 4px 8px; }
+  input[type=range] { margin: 2px 0 0; }
+  #toggle { position: fixed; top: 12px; left: 12px; display: none; }
+  #toggle.shown { display: block; }
+  #error { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<button id="toggle" title="Show panel">☰</button>
+<div id="panel">
+  <div class="row"><h1 style="flex:1">{{TITLE}}</h1><button id="hide" title="Hide panel (H)">×</button></div>
+  <div class="dim" id="summary"></div>
+
+  <h2>Section</h2>
+  <div class="row">
+    <div class="seg" style="flex:1">
+      <button data-axis="-1" class="on">Off</button>
+      <button data-axis="0">X</button>
+      <button data-axis="1">Y</button>
+      <button data-axis="2">Z</button>
+    </div>
+    <button class="flip" title="Keep the other half (F)">Flip</button>
+  </div>
+  <input class="cut" type="range" min="0" max="1000" value="500" disabled>
+  <div class="row dim"><span class="cut-label">no section</span></div>
+
+  <h2>Shading</h2>
+  <div class="seg">
+    <button data-shade="flat">Flat</button>
+    <button data-shade="smooth" class="on">Smooth</button>
+  </div>
+
+  <h2>Colour</h2>
+  <div class="seg">
+    <button data-mode="0" class="on">Material</button>
+    <button data-mode="1">Overhang</button>
+  </div>
+  <div class="legend-block" style="display:none">
+    <div class="legend">
+      <span class="oh-safe">&lt;30°</span><span class="oh-mild">30–45°</span><span class="oh-steep">45–60°</span><span class="oh-bad">&gt;60°</span>
+    </div>
+    <div class="dim" style="margin-top:4px">Angle of down-facing surfaces from vertical, with Z as the print direction. Section the part to see the inside.</div>
+  </div>
+
+  <h2>View</h2>
+  <div class="seg">
+    <button data-view="iso">Iso</button>
+    <button data-view="top">Top</button>
+    <button data-view="front">Front</button>
+    <button data-view="side">Side</button>
+  </div>
+
+  <div id="infoBlock"></div>
+
+  <h2>Controls</h2>
+  <div class="dim">
+    Drag to orbit · right-drag or <kbd>Shift</kbd>+drag to pan · wheel to zoom · double-click to re-centre on a point<br>
+    <kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd> section axis · <kbd>←</kbd> <kbd>→</kbd> move it · <kbd>F</kbd> flip · <kbd>O</kbd> overhang · <kbd>S</kbd> shading · <kbd>R</kbd> reset · <kbd>H</kbd> panel
+  </div>
+</div>
+<div id="error"></div>
+
+<script id="meta" type="application/json">{{META}}</script>
+<script id="positions" type="application/octet-stream">{{POSITIONS}}</script>
+<script id="indices" type="application/octet-stream">{{INDICES}}</script>
+<script>
+"use strict";
+/*{{VIEWER_CORE}}*/
+
+(async function () {
+  // A stray text selection would make the next drag on the slider drag the
+  // selection instead; nothing on this page is meant to be dragged.
+  document.addEventListener("dragstart", (e) => e.preventDefault());
+  const meta = JSON.parse(document.getElementById("meta").textContent);
+  const $ = (id) => document.getElementById(id);
+  const fail = (msg) => { $("error").style.display = "flex"; $("error").textContent = msg; };
+  const panel = $("panel");
+  let sync = () => {};
+  let viewer;
+  try {
+    viewer = createViewer($("view"), {
+      leftInset: () => (panel.classList.contains("hidden") ? 0 : panel.offsetWidth + 12),
+      onChange: () => sync(),
+    });
+  } catch (e) { fail("Shader error: " + e.message); return; }
+  if (!viewer) { fail("This viewer needs WebGL 2, which this browser does not provide."); return; }
+
+  async function decode(id) {
+    const text = $(id).textContent.trim();
+    try {
+      return await (await fetch("data:application/octet-stream;base64," + text)).arrayBuffer();
+    } catch (_) {
+      const bin = atob(text), out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out.buffer;
+    }
+  }
+  const positions = new Uint16Array(await decode("positions"));
+  const indices = new Uint32Array(await decode("indices"));
+  sync = bindViewControls(viewer, panel, () => meta.layer_height);
+  viewer.setMesh(positions, indices, meta.lo, meta.hi, false);
+
+  const fmt = (v) => v.toLocaleString("en-US", { maximumFractionDigits: 1 });
+  const size = [0, 1, 2].map((a) => meta.hi[a] - meta.lo[a]);
+  $("summary").textContent = `${fmt(size[0])} × ${fmt(size[1])} × ${fmt(size[2])} mm · ${meta.triangles.toLocaleString("en-US")} triangles`;
+  if (meta.info && meta.info.length) {
+    const title = document.createElement("h2"); title.textContent = "Report";
+    const table = document.createElement("table");
+    for (const [k, v] of meta.info) {
+      const row = table.insertRow();
+      const key = row.insertCell(); key.className = "dim"; key.textContent = k;
+      row.insertCell().textContent = v;
+    }
+    $("infoBlock").append(title, table);
+  }
+  function togglePanel() { const hidden = panel.classList.toggle("hidden"); $("toggle").classList.toggle("shown", hidden); viewer.redraw(); }
+  $("hide").addEventListener("click", togglePanel); $("toggle").addEventListener("click", togglePanel);
+  window.addEventListener("keydown", (e) => { if (e.key.toLowerCase() === "h" && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) togglePanel(); });
+})();
+</script>
+</body>
+</html>

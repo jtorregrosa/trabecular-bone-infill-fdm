@@ -1,0 +1,61 @@
+# Publishes the WebAssembly web app (wasm/README.md) to GitHub Pages on every
+# push to main. One-time setup: Settings > Pages > Source: "GitHub Actions".
+#
+# The app page is built from ui/ and committed (src/web/ui/index.html), so
+# this needs no Node.js: only Rust and its wasm32 target.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push does not cancel one in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            . -> target
+            wasm -> target
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      # Builds the wasm crate and assembles wasm/dist (examples/wasm_site.rs).
+      # SITE_URL adds the link-preview tags, which need absolute addresses.
+      - name: Build the site
+        run: cargo run --release --example wasm_site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: wasm/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

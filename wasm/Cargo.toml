@@ -1,0 +1,22 @@
+[package]
+name = "bone-infill-wasm"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "WebAssembly build of bone-infill: the web app with no server"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# The library only: no command line, no HTTP server.
+bone-infill = { path = "..", default-features = false }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+# A workspace of its own, so building it never touches the native build.
+[workspace]

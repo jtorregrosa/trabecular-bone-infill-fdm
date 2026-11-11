@@ -1,0 +1,76 @@
+  /* bone-infill design tokens and shared controls (see docs/DESIGN.md).
+     Inserted into both the web app and the standalone viewer. */
+  :root {
+    /* Cool neutral grays, after Bambu Studio's dark theme. */
+    --canvas: #1b1b1f;      /* 3D view, behind the part */
+    --surface: #242428;     /* side panels */
+    --field: #2d2d31;       /* buttons, inputs */
+    --raised: #36363c;      /* hover on fields */
+    --line: #3e3e45;        /* hairlines, resting borders */
+    --line-strong: #54545b; /* emphasised borders */
+    --text: #efeff0;
+    --text-2: #b3b3b4;      /* supporting text */
+    --text-3: #818183;      /* hints, captions */
+
+    /* Jade: our own green, near the printer world's but not its brand colour.
+       Reserved for interaction: the primary action, selection, focus. */
+    --jade: #3dbe8b;
+    --jade-hover: #56cd9d;
+    --jade-pressed: #2fa275;
+    --jade-tint: rgba(61, 190, 139, 0.12);
+    --on-jade: #0d1c16;
+
+    /* Bone: the colour of the part itself, never of controls. */
+    --bone: #ede6d6;
+
+    --danger: #e5675c;
+    --warn: #e9a23b;
+
+    /* Overhang scale (down-facing angle from vertical). */
+    --oh-safe: #7fb48c;
+    --oh-mild: #d9c860;
+    --oh-steep: #e08a3c;
+    --oh-bad: #d6483b;
+
+    --radius: 6px;
+    --radius-lg: 10px;
+    --font: 13px/1.45 system-ui, "Segoe UI", -apple-system, sans-serif;
+    --mono: 11px ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--canvas); color: var(--text); font: var(--font); overflow: hidden; }
+  h2 { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); font-weight: 600; }
+  .dim { color: var(--text-2); }
+  .bad { color: var(--danger); }
+  ::selection { background: var(--jade-tint); }
+
+  button, .button { background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius); padding: 5px 10px; font: inherit; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; transition: background 0.12s var(--ease), border-color 0.12s var(--ease); }
+  button:hover:not(:disabled), .button:hover { background: var(--raised); border-color: var(--line-strong); }
+  button:focus-visible, .button:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
+  button:disabled, .button.off { opacity: 0.45; cursor: default; pointer-events: none; }
+  button.on { background: var(--jade-tint); color: var(--jade-hover); border-color: var(--jade); position: relative; z-index: 1; }
+  button.on:hover:not(:disabled) { background: var(--jade-tint); border-color: var(--jade-hover); }
+  button.primary { background: var(--jade); color: var(--on-jade); border-color: var(--jade); font-weight: 600; }
+  button.primary:hover:not(:disabled) { background: var(--jade-hover); border-color: var(--jade-hover); }
+  button.primary:active:not(:disabled) { background: var(--jade-pressed); border-color: var(--jade-pressed); }
+
+  .seg { display: flex; }
+  .seg button { flex: 1; border-radius: 0; margin-left: -1px; }
+  .seg button:first-child { border-radius: var(--radius) 0 0 var(--radius); margin-left: 0; }
+  .seg button:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+
+  input[type=number], input[type=text], textarea { background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius); padding: 3px 6px; font: inherit; font-variant-numeric: tabular-nums; }
+  input:focus, textarea:focus { outline: none; border-color: var(--jade); }
+  input[type=range] { width: 100%; height: 20px; accent-color: var(--jade); margin: 0; cursor: pointer; touch-action: none; }
+  input[type=checkbox] { accent-color: var(--jade); }
+
+  .legend { display: flex; margin-top: 6px; border-radius: 4px; overflow: hidden; font-size: 11px; color: #1b1b1f; text-align: center; }
+  .legend span { flex: 1; padding: 2px 0; }
+  .legend .oh-safe { background: var(--oh-safe); }
+  .legend .oh-mild { background: var(--oh-mild); }
+  .legend .oh-steep { background: var(--oh-steep); }
+  .legend .oh-bad { background: var(--oh-bad); }
+  kbd { background: var(--field); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; font: var(--mono); }
+  canvas { touch-action: none; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }

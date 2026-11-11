@@ -1,0 +1,13 @@
+/target
+/out
+*.png
+!docs/**/*.png
+/models
+/wasm/target
+/wasm/dist
+__pycache__/
+*.blend1
+
+# Word copies of the MakerWorld description, made to paste into its editor, and Office lock files
+docs/makerworld/*.docx
+~$*

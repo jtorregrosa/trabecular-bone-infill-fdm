@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Fill a 3D-printable part with a trabecular-bone lattice that prints without supports."
+    />
+    <title>bone-infill</title>
+    <!-- Brand pack (docs/brand): each BRAND placeholder becomes the file as a
+         data URI at build time (vite.config.ts), so nothing else is served. -->
+    <link rel="icon" type="image/svg+xml" href="%BRAND:svg/icon.svg%" />
+    <meta name="theme-color" content="#1b1b1f" />
+    <!--
+      Loading screen. Plain CSS, so it shows before the app's script runs.
+      It fades in only if loading takes more than 150 ms (the native server
+      answers at once, and a flash would be worse than nothing), shows the
+      engine's download progress in the WebAssembly build, and fades out when
+      the app has its parameters (App.tsx).
+    -->
+    <style>
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        background: #1b1b1f;
+        color: #b3b3b4;
+        font:
+          13px/1.45 system-ui,
+          "Segoe UI",
+          -apple-system,
+          sans-serif;
+        animation: splash-in 200ms cubic-bezier(0.23, 1, 0.32, 1) 150ms both;
+        transition:
+          opacity 250ms cubic-bezier(0.23, 1, 0.32, 1),
+          visibility 0s linear 250ms;
+      }
+      #splash.done {
+        opacity: 0;
+        visibility: hidden;
+      }
+      #splash .bar {
+        width: 168px;
+        height: 3px;
+        border-radius: 3px;
+        background: #2d2d31;
+        overflow: hidden;
+      }
+      #splash .fill {
+        width: 100%;
+        height: 100%;
+        background: #3dbe8b;
+        transform-origin: left;
+        transform: scaleX(var(--progress, 0));
+        transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+      }
+      #splash.waiting .fill {
+        width: 40%;
+        transform: none;
+        animation: splash-slide 1.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      }
+      @keyframes splash-in {
+        from {
+          opacity: 0;
+        }
+      }
+      @keyframes splash-slide {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(250%);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #splash,
+        #splash .fill {
+          animation: none;
+          transition: none;
+        }
+        #splash.waiting .fill {
+          width: 100%;
+          opacity: 0.4;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="splash" class="waiting" role="status" aria-live="polite">
+      <img src="%BRAND:svg/logo-bone.svg%" width="36" height="100" alt="" />
+      <div class="bar"><div class="fill"></div></div>
+      <div class="text">Loading…</div>
+    </div>
+    <script>
+      // Download progress of the engine, sent by the WebAssembly build's
+      // shim; the native server sends none, and the bar just waits.
+      addEventListener("studio:progress", function (event) {
+        var splash = document.getElementById("splash")
+        if (!splash) return
+        var text = splash.querySelector(".text")
+        var p = event.detail
+        if (p.done) {
+          splash.classList.add("waiting")
+          text.textContent = "Starting the engine…"
+        } else if (p.total && p.loaded <= p.total) {
+          splash.classList.remove("waiting")
+          splash.style.setProperty("--progress", p.loaded / p.total)
+          text.textContent =
+            "Downloading the engine… " +
+            Math.round((100 * p.loaded) / p.total) +
+            " %"
+        } else {
+          // Compressed transfer: the size on the wire is not the size read.
+          text.textContent =
+            "Downloading the engine… " + (p.loaded / 1048576).toFixed(1) + " MB"
+        }
+      })
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

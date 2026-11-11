@@ -1,0 +1,7 @@
+[build]
+target = "wasm32-unknown-unknown"
+
+[target.wasm32-unknown-unknown]
+# 128-bit SIMD is available in every current browser; it lets the compiler
+# vectorise the noise kernels.
+rustflags = ["-C", "target-feature=+simd128"]

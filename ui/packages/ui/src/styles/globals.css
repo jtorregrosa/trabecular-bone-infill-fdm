@@ -1,0 +1,184 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+@source "../../../apps/**/*.{ts,tsx}";
+@source "../**/*.{ts,tsx}";
+
+/*
+ * Design tokens of the studio kit. Same values as src/web/theme.css in the
+ * repository root (the standalone viewer), described in docs/DESIGN.md.
+ *
+ * Three roles, never mixed: cool grays for the interface, jade for
+ * interaction (primary action, selection, focus), bone for the part itself.
+ * The interface is dark only: it frames a 3D view.
+ */
+:root {
+  --canvas: #1b1b1f;
+  --surface: #242428;
+  --field: #2d2d31;
+  --raised: #36363c;
+  --line: #3e3e45;
+  --line-strong: #54545b;
+  --text: #efeff0;
+  --text-2: #b3b3b4;
+  --text-3: #818183;
+
+  --jade: #3dbe8b;
+  --jade-hover: #56cd9d;
+  --jade-pressed: #2fa275;
+  --jade-tint: rgb(61 190 139 / 0.12);
+  --on-jade: #0d1c16;
+
+  --bone: #ede6d6;
+  --warn: #e9a23b;
+
+  --oh-safe: #7fb48c;
+  --oh-mild: #d9c860;
+  --oh-steep: #e08a3c;
+  --oh-bad: #d6483b;
+
+  /* shadcn roles, mapped onto the tokens above. */
+  --background: var(--canvas);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--field);
+  --popover-foreground: var(--text);
+  --primary: var(--jade);
+  --primary-foreground: var(--on-jade);
+  --secondary: var(--field);
+  --secondary-foreground: var(--text);
+  --muted: var(--field);
+  --muted-foreground: var(--text-2);
+  --accent: var(--raised);
+  --accent-foreground: var(--text);
+  --destructive: #e5675c;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--jade);
+  --radius: 0.5rem;
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--jade);
+  --sidebar-primary-foreground: var(--on-jade);
+  --sidebar-accent: var(--raised);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--jade);
+  --chart-1: var(--jade);
+  --chart-2: var(--bone);
+  --chart-3: var(--text-2);
+  --chart-4: var(--warn);
+  --chart-5: var(--text-3);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: system-ui, "Segoe UI", -apple-system, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --font-heading: var(--font-sans);
+
+  /* Motion: a strong ease-out for things that appear (fast start, soft
+     landing). Durations stay under 300 ms; it is a tool, used all day. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-field: var(--field);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-subtle: var(--text-3);
+  --color-jade: var(--jade);
+  --color-jade-hover: var(--jade-hover);
+  --color-jade-pressed: var(--jade-pressed);
+  --color-jade-tint: var(--jade-tint);
+  --color-on-jade: var(--on-jade);
+  --color-bone: var(--bone);
+  --color-warn: var(--warn);
+  --color-oh-safe: var(--oh-safe);
+  --color-oh-mild: var(--oh-mild);
+  --color-oh-steep: var(--oh-steep);
+  --color-oh-bad: var(--oh-bad);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background font-sans text-[13px] leading-[1.45] text-foreground antialiased;
+    overflow: hidden;
+  }
+  ::selection {
+    background: var(--jade-tint);
+  }
+  kbd {
+    @apply rounded-sm border border-line bg-field px-1 font-mono text-[11px];
+  }
+}
+
+/* Reduced motion: every transition and animation becomes instant, as a
+   safety net behind the motion-reduce variants used on each component. The
+   busy spinner keeps turning, slowly: it is the only sign that work is going
+   on, and it moves in place without travelling across the screen. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+  .animate-spin {
+    animation-duration: 2.4s !important;
+    animation-iteration-count: infinite !important;
+  }
+}

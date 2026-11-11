@@ -1,0 +1,47 @@
+[package]
+name = "bone-infill"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Fills closed 3D models with a printable trabecular-bone lattice (FDM, no internal supports)"
+readme = "README.md"
+keywords = ["3d-printing", "infill", "lattice", "voxel", "biomimicry"]
+categories = ["command-line-utilities", "graphics", "science"]
+
+[lib]
+name = "bone_infill"
+path = "src/lib.rs"
+
+[[bin]]
+name = "bone-infill"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[features]
+default = ["cli"]
+# The command line and the native web server. The library alone builds
+# without it, which is what the WebAssembly port in `wasm/` uses.
+cli = ["dep:clap", "dep:tiny_http"]
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4.6", features = ["derive"], optional = true }
+png = "0.18"
+rayon = "1.12"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tiny_http = { version = "0.12.0", default-features = false, optional = true }
+zip = { version = "8.6", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 1
+
+# Tests exercise full voxel pipelines; unoptimised they are painfully slow.
+[profile.test]
+opt-level = 2

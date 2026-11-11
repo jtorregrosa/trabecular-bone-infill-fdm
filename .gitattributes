@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.stl binary
+# Built from ui/ by `npm run build`; committed so that cargo needs no Node.js.
+src/web/ui/index.html linguist-generated=true
+*.blend binary
